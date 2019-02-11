@@ -16,7 +16,7 @@ class Gauge extends Component {
             this.setState({
                 curValue: Math.random() * 250
             })
-        }, 4500);
+        }, 2500);
     }
 
     render() {

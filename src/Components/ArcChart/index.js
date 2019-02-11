@@ -1,4 +1,6 @@
-import React, { Component } from 'react';
+import React, {
+    Component
+} from 'react';
 import * as d3 from 'd3'
 import './style.scss';
 
@@ -19,28 +21,70 @@ class ArcChart extends Component {
     }
 
     createArcChart() {
-        const { select: d3Select, range: d3Range, rgb: d3Rgb, scaleLinear: d3ScaleLinear,
-            line: d3Line, curveLinear: d3CurveLinear, arc: d3Arc, interpolateHsl: d3InterpolateHsl,
-            easeElastic: d3EaseElastic, } = d3
+        const {
+            select: d3Select,
+            range: d3Range,
+            rgb: d3Rgb,
+            scaleLinear: d3ScaleLinear,
+            line: d3Line,
+            curveLinear: d3CurveLinear,
+            arc: d3Arc,
+            interpolateHsl: d3InterpolateHsl,
+            easeElastic: d3EaseElastic,
+        } = d3
 
-        const { values, curValue, width, height } = this.props;
+        const {
+            values,
+            curValue,
+            height
+        } = this.props;
         const [minValue, maxValue] = values;
         const element = this.element;
         const radius = height - 10;
+
+        const innerRadius = radius / 2;
         const majorTicks = 5;
         const DURATION = 1000;
         const labelInset = 15;
-        const ringWidth = 40;
+        const ringWidth = 15;
         const ringInset = 20;
         const minAngle = -90;
         const maxAngle = 90;
         const range = maxAngle - minAngle;
-        const arcColorFn = d3InterpolateHsl(d3Rgb('#8abe6e'), d3Rgb('#f05757'));
+        const arcColorFn = d3InterpolateHsl(d3Rgb('red'), d3Rgb('#8abe6e'));
         const arrowColor = '#dae7f5';
 
-        const arc = d3Arc()
+        const svgData = d3Select(element).data([null]);
+        const tickData = d3Range(majorTicks).map(() => 1 / majorTicks);
+        const svgMerge = svgData.merge(svgData);
+        const centerTx = this.centerTranslation(radius);
+
+        //#region Outer arc
+        const outerArcPath = d3Arc()
             .innerRadius(radius - ringWidth - ringInset)
             .outerRadius(radius - ringInset)
+            .startAngle(this.deg2rad(minAngle))
+            .endAngle(this.deg2rad(maxAngle));
+
+        const outerArcsData = svgMerge.selectAll('g.outer_arc').data([null]);
+        const outerArcEnter = outerArcsData.enter()
+            .append('g')
+            .attr('class', 'outer_arc')
+            .attr('transform', centerTx)
+
+        outerArcEnter.append('path')
+            .attr('fill', 'transparent')
+            .attr('stroke', 'black')
+            .attr('d', outerArcPath)
+
+        outerArcsData.merge(outerArcEnter)
+
+        //#endregion
+
+        //#region Inner arcs
+        const innerArcPath = d3Arc()
+            .innerRadius(innerRadius - ringWidth - ringInset)
+            .outerRadius(innerRadius - ringInset)
             .startAngle((d, i) => {
                 const ratio = d * i
                 return this.deg2rad(minAngle + (ratio * range))
@@ -49,26 +93,23 @@ class ArcChart extends Component {
                 const ratio = d * (i + 1)
                 return this.deg2rad(minAngle + (ratio * range))
             });
-        
-        const svgData = d3Select(element).data([null]);
-        const tickData = d3Range(majorTicks).map(() => 1 / majorTicks);
-        const svgMerge = svgData.merge(svgData);
-        const centerTx = this.centerTranslation(radius);
-        
-        // Arcs
-        const arcsData = svgMerge.selectAll('g.arc').data(tickData);
-        const arcsEnter = arcsData.enter()
+
+        const innerArcsData = svgMerge.selectAll('g.inner_arc').data(tickData);
+        const innerArcsEnter = innerArcsData.enter()
             .append('g')
-            .attr('class', 'arc')
+            .attr('class', 'inner_arc')
             .attr('transform', centerTx)
 
-        arcsEnter.append('path')
+        innerArcsEnter.append('path')
             .attr('fill', (d, i) => arcColorFn(d * (i + 1)))
-            .attr('d', arc)
+            .attr('d', innerArcPath)
 
-        arcsData.merge(arcsEnter)
+        innerArcsData.merge(innerArcsEnter)
 
-        // Labels on Arcs
+        //#endregion
+
+        //#region Labels on Inner arcs
+
         const scaleValue = d3ScaleLinear()
             .range([0, 1])
             .domain([minValue, maxValue]);
@@ -92,13 +133,16 @@ class ArcChart extends Component {
             .attr('transform', (d) => {
                 const ratio = scaleValue(d);
                 const newAngle = minAngle + (ratio * range);
-                return 'rotate(' + newAngle  + ') translate(0,' + (labelInset - radius ) + ')';
+                return 'rotate(' + newAngle + ') translate(0,' + (labelInset - innerRadius) + ')';
             })
-        
-        // Pointer
-        const pointerWidth = 10
-        const pointerHeadLengthPercent = 0.9
-        const pointerHeadLength = Math.round(radius * pointerHeadLengthPercent)
+
+        //#endregion
+
+        //#region Pointer
+
+        const pointerWidth = 10;
+        const pointerHeadLengthPercent = 1.5;
+        const pointerHeadLength = Math.round(innerRadius * pointerHeadLengthPercent)
         const pointerTailLength = 5
         const lineData = [
             [pointerWidth / 2, 0],
@@ -125,6 +169,10 @@ class ArcChart extends Component {
             .duration(DURATION)
             .ease(d3EaseElastic)
             .attr('transform', 'rotate(' + newAngle + ')')
+
+
+        //#endregion
+
     }
 
     deg2rad = (deg) => {
@@ -138,8 +186,7 @@ class ArcChart extends Component {
     render() {
         const { width, height } = this.props;
         return (
-            <svg ref={element => this.element = element}
-                width={width} height={300} className='gauge'>
+            <svg ref={element => this.element = element} width={width} height={'100%'} className='gauge' >
             </svg>
         );
     };
