@@ -36,21 +36,19 @@ class ArcChart extends Component {
         const {
             values,
             curValue,
-            height
+            height,
+            angles
         } = this.props;
         const [minValue, maxValue] = values;
+        const [minAngle, maxAngle] = angles;
+        const range = maxAngle - minAngle;
         const element = this.element;
         const radius = height - 10;
-
         const innerRadius = radius / 2;
         const majorTicks = 5;
         const DURATION = 1000;
-        const labelInset = 15;
         const ringWidth = 15;
         const ringInset = 20;
-        const minAngle = -90;
-        const maxAngle = 90;
-        const range = maxAngle - minAngle;
         const arcColorFn = d3InterpolateHsl(d3Rgb('red'), d3Rgb('#8abe6e'));
         const arrowColor = '#dae7f5';
 
@@ -108,8 +106,7 @@ class ArcChart extends Component {
 
         //#endregion
 
-        //#region Labels on Inner arcs
-
+        //#region Labels
         const scaleValue = d3ScaleLinear()
             .range([0, 1])
             .domain([minValue, maxValue]);
@@ -118,23 +115,39 @@ class ArcChart extends Component {
         const labelsEnter = labelsData.enter()
             .append('g')
             .attr('class', 'label')
-            .attr('transform', centerTx);
+            .attr('text-anchor', 'middle')
+            .attr('transform', (d) => {
+                const ratio = scaleValue(d);
+                const Pi = Math.PI;
+                const innerRadiusOuterStroke = innerRadius - ringInset;
+                const outerRadiusinnerStroke = radius - ringWidth - ringInset;
+                const middlePointArcs = (innerRadiusOuterStroke + outerRadiusinnerStroke) / 2;
+                const minAngleRad = this.deg2rad(minAngle);
+                const edgeSize = this.deg2rad(range);
+
+                // Adding the radius in the end to use the center of the svg as the point of reference
+                const x = middlePointArcs * Math.cos(ratio * edgeSize + minAngleRad - (Pi / 2)) + radius;
+                const y = middlePointArcs * Math.sin(ratio * edgeSize + minAngleRad - (Pi / 2)) + radius;
+
+                return `translate(${x},${y})`;
+            });
 
         labelsData.exit().remove()
         labelsEnter
             .append('text')
             .text(d => d);
 
-        const labelsMerge = labelsData.merge(labelsEnter)
-        labelsMerge.select('text')
-            .text(d => d)
-            .transition()
-            .duration(DURATION)
-            .attr('transform', (d) => {
-                const ratio = scaleValue(d);
-                const newAngle = minAngle + (ratio * range);
-                return 'rotate(' + newAngle + ') translate(0,' + (labelInset - innerRadius) + ')';
-            })
+        // const labelsMerge = labelsData.merge(labelsEnter)
+
+        // labelsMerge.selectAll('text')
+        //     .text(d => d)
+        //     .transition()
+        //     .duration(DURATION)
+        //     .attr('transform', (d) => {
+        //         const ratio = scaleValue(d);
+        //         const newAngle = minAngle + (ratio * range);
+        //         return 'rotate(' + newAngle + ') translate(0,' + (innerRadius-radius-40) + ')';
+        //     })
 
         //#endregion
 

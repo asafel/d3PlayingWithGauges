@@ -5,7 +5,7 @@ import './style.scss';
 class Gauge extends Component {
     constructor() {
         super();
-        
+
         this.state = {
             curValue: 75
         }
@@ -25,6 +25,7 @@ class Gauge extends Component {
                 <ArcChart
                     size={[500, 500]}
                     values={[0, 250]}
+                    angles={[-90, 90]}
                     height={250}
                     width={500}
                     curValue={this.state.curValue}
