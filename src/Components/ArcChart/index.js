@@ -96,6 +96,8 @@ class ArcChart extends Component {
             .attr('class', 'ticks_container')
             .attr('transform', centerTx)
 
+        // Extending our ticks data in order to include new (smaller) ticks
+        // "extendedTicksArr" will be an array containing numbers and objects {representing the virtual ticks}
         const extendedTicksArr = [];
         for (let i = 0; i < ticks.length; i++) {
             if (i === ticks.length - 1) {
@@ -274,6 +276,20 @@ class ArcChart extends Component {
             .attr('transform', `rotate(${newAngle})`);
 
         //#endregion
+
+        //#region Value text
+        const valueTextEnter = svgMerge.select('g.value').selectAll('text').data([null]);
+        valueTextEnter.exit().remove();
+        valueTextEnter.enter()
+            .append('text')
+            .merge(valueTextEnter)
+            .attr('font-size', 26)
+            .attr('fill', '#1a88b7')
+            .attr('font-weight', 'bold')
+            .attr('transform', `translate(${radius},${radius + 85})`)
+            .text(Math.ceil(curValue));
+            
+        //#endregion
     }
 
     deg2rad = (deg) => {
@@ -281,7 +297,7 @@ class ArcChart extends Component {
     }
 
     centerTranslation = (r) => {
-        return 'translate(' + r + ',' + r + ')'
+        return `translate(${r},${r})`;
     }
 
     render() {
@@ -296,6 +312,8 @@ class ArcChart extends Component {
                 height={'100%'}
                 className='gauge'
                 ref={element => this.element = element} >
+                <g className="value" textAnchor={'middle'} />
+
             </svg>
         );
     };
