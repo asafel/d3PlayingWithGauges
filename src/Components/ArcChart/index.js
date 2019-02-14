@@ -44,6 +44,7 @@ class ArcChart extends Component {
         const [minAngle, maxAngle] = angles;
         const range = maxAngle - minAngle;
         const element = this.element;
+        const Pi = Math.PI;
         const radius = height - 10;
         const innerRadius = radius / 2;
         const majorTicks = 5;
@@ -57,6 +58,10 @@ class ArcChart extends Component {
         const tickData = d3Range(majorTicks).map(() => 1 / majorTicks);
         const svgMerge = svgData.merge(svgData);
         const centerTx = this.centerTranslation(radius);
+        const scaleValue = d3ScaleLinear()
+            .range([0, 1])
+            .domain([minValue, maxValue]);
+        const ticks = scaleValue.ticks(majorTicks);
 
         //#region Outer arc
 
@@ -81,6 +86,34 @@ class ArcChart extends Component {
             .attr('d', outerArcPath)
 
         outerArcsData.merge(outerArcEnter)
+
+        //#endregion
+
+        //#region Ticks-
+        const outerArcTicks = svgMerge.selectAll('g.ticks_container').data([null]);
+        const outerArcTicksEnter = outerArcTicks.enter()
+            .append('g')
+            .attr('class', 'ticks_container')
+            .attr('transform', centerTx)
+
+        const outerArcTicksData = outerArcTicksEnter.selectAll('g.tick').data(ticks);
+        const outerArcTicksDataEnter = outerArcTicksData.enter()
+            .append('line')
+            .attr('class', 'tick')
+            .attr('stroke', 'black')
+            .attr('x2', 22)
+            .attr('transform', (d) => {
+                const ratio = scaleValue(d);
+                const outerRadiusinnerStroke = radius - ringWidth - ringInset;
+                const minAngleRad = this.deg2rad(minAngle);
+                const edgeSize = this.deg2rad(range);
+                const newAngle = minAngle + (ratio * range);
+
+                const x = outerRadiusinnerStroke * Math.cos(ratio * edgeSize + minAngleRad - (Pi / 2));
+                const y = outerRadiusinnerStroke * Math.sin(ratio * edgeSize + minAngleRad - (Pi / 2));
+
+                return `translate(${x},${y}) rotate(${newAngle + 90})`;
+            });
 
         //#endregion
 
@@ -117,11 +150,6 @@ class ArcChart extends Component {
         //#endregion
 
         //#region Labels
-        const scaleValue = d3ScaleLinear()
-            .range([0, 1])
-            .domain([minValue, maxValue]);
-        const ticks = scaleValue.ticks(majorTicks);
-
         const labelsContainer = svgMerge.selectAll('g.labels').data([null]);
         const labelsContainerEnter = labelsContainer.enter()
             .append('g')
@@ -134,7 +162,6 @@ class ArcChart extends Component {
             .attr('text-anchor', 'middle')
             .attr('transform', (d) => {
                 const ratio = scaleValue(d);
-                const Pi = Math.PI;
                 const innerRadiusOuterStroke = innerRadius - ringInset;
                 const outerRadiusinnerStroke = radius - ringWidth - ringInset;
                 const middlePointArcs = (innerRadiusOuterStroke + outerRadiusinnerStroke) / 2;
@@ -171,41 +198,39 @@ class ArcChart extends Component {
 
         const pointerWidth = 10;
         const pointerHeadLengthPercent = 1.5;
-        const pointerHeadLength = Math.round(innerRadius * pointerHeadLengthPercent)
-        const pointerTailLength = 5
+        const pointerHeadLength = Math.round(innerRadius * pointerHeadLengthPercent);
+        const pointerTailLength = 5;
         const lineData = [
             [pointerWidth / 2, 0],
             [0, -pointerHeadLength],
             [-(pointerWidth / 2), 0],
             [0, pointerTailLength],
             [pointerWidth / 2, 0]
-        ]
-        const pointerLine = d3Line().curve(d3CurveLinear)
-        const pointerData = svgMerge.selectAll('g.pointer').data([lineData])
+        ];
+
+        const pointerLine = d3Line().curve(d3CurveLinear);
+        const pointerData = svgMerge.selectAll('g.pointer').data([lineData]);
         const pointerEnter = pointerData.enter()
             .append('g')
             .attr('class', 'pointer')
-            .attr('transform', centerTx)
+            .attr('transform', centerTx);
+
         pointerEnter.append('path')
             .attr('d', pointerLine)
-            .attr('transform', 'rotate(' + minAngle + ')')
-            .attr('fill', arrowColor)
-        const pointerMerge = pointerData.merge(pointerEnter)
-        const ratio = scaleValue(curValue)
-        const newAngle = minAngle + (ratio * range)
+            .attr('transform', `rotate(${minAngle})`)
+            .attr('fill', arrowColor);
+
+        const pointerMerge = pointerData.merge(pointerEnter);
+        const ratio = scaleValue(curValue);
+        const newAngle = minAngle + (ratio * range);
+
         pointerMerge.select('path')
             .transition()
             .duration(DURATION)
             .ease(d3EaseElastic)
-            .attr('transform', 'rotate(' + newAngle + ')')
-
-
-        //#endregion
-
-        //#region Ticks-
+            .attr('transform', `rotate(${newAngle})`);
 
         //#endregion
-
     }
 
     deg2rad = (deg) => {
