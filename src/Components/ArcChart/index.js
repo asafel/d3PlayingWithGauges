@@ -48,11 +48,10 @@ class ArcChart extends Component {
         const radius = height - 10;
         const innerRadius = radius / 2;
         const majorTicks = 5;
-        const DURATION = 1000;
+        const DURATION = 2500;
         const ringWidth = 15;
         const ringInset = 20;
         const arcColorFn = d3InterpolateHsl(d3Rgb('red'), d3Rgb('#8abe6e'));
-        const arrowColor = '#dae7f5';
 
         const svgData = d3Select(element).data([null]);
         const tickData = d3Range(majorTicks).map(() => 1 / majorTicks);
@@ -83,6 +82,7 @@ class ArcChart extends Component {
         outerArcEnter.append('path')
             .attr('fill', 'transparent')
             .attr('stroke', 'black')
+            .attr('opacity', 0.6)
             .attr('d', outerArcPath)
 
         outerArcsData.merge(outerArcEnter)
@@ -96,14 +96,56 @@ class ArcChart extends Component {
             .attr('class', 'ticks_container')
             .attr('transform', centerTx)
 
-        const outerArcTicksData = outerArcTicksEnter.selectAll('g.tick').data(ticks);
+        const extendedTicksArr = [];
+        for (let i = 0; i < ticks.length; i++) {
+            if (i === ticks.length - 1) {
+                extendedTicksArr.push(ticks[i]);
+                break;
+            }
+            const val = ticks[i];
+            const nextVal = ticks[i + 1];
+            extendedTicksArr.push(val);
+            const margin = (nextVal - val) / 4;
+            let newVal = val + margin;
+
+            for (let j = 0; j < 3; j++) {
+                extendedTicksArr.push({
+                    val: newVal,
+                    size: j % 2 === 0 ? 'S' : 'M'
+                });
+                newVal += margin;
+            }
+        }
+
+        const outerArcTicksData = outerArcTicksEnter.selectAll('g.tick').data(extendedTicksArr);
         const outerArcTicksDataEnter = outerArcTicksData.enter()
             .append('line')
-            .attr('class', 'tick')
+            .attr('class', (d) => {
+                let className = 'tick';
+                if (typeof d === "object") {
+                    if (d.size === "S") {
+                        className += ' smalltick';
+                    } else {
+                        className += ' mediumtick';
+                    }
+                }
+                return className;
+            })
             .attr('stroke', 'black')
-            .attr('x2', 22)
+            .attr('opacity', 0.6)
+            .attr('x2', (d) => {
+                if (typeof d === "object") {
+                    if (d.size === "S") {
+                        return 10;
+                    } else {
+                        return 16;
+                    }
+                }
+                return 24;
+            })
             .attr('transform', (d) => {
-                const ratio = scaleValue(d);
+                const val = typeof d === "number" ? d : d.val;
+                const ratio = scaleValue(val);
                 const outerRadiusinnerStroke = radius - ringWidth - ringInset;
                 const minAngleRad = this.deg2rad(minAngle);
                 const edgeSize = this.deg2rad(range);
@@ -196,10 +238,11 @@ class ArcChart extends Component {
 
         //#region Pointer
 
-        const pointerWidth = 10;
-        const pointerHeadLengthPercent = 1.5;
+        const pointerWidth = 7;
+        const pointerHeadLengthPercent = 1.3;
         const pointerHeadLength = Math.round(innerRadius * pointerHeadLengthPercent);
         const pointerTailLength = 5;
+        const arrowColor = '#5eb2d6';
         const lineData = [
             [pointerWidth / 2, 0],
             [0, -pointerHeadLength],
@@ -248,7 +291,11 @@ class ArcChart extends Component {
         } = this.props;
 
         return (
-            <svg ref={element => this.element = element} width={width} height={'100%'} className='gauge' >
+            <svg
+                width={width}
+                height={'100%'}
+                className='gauge'
+                ref={element => this.element = element} >
             </svg>
         );
     };
