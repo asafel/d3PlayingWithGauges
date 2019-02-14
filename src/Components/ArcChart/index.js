@@ -39,6 +39,7 @@ class ArcChart extends Component {
             height,
             angles
         } = this.props;
+
         const [minValue, maxValue] = values;
         const [minAngle, maxAngle] = angles;
         const range = maxAngle - minAngle;
@@ -58,11 +59,15 @@ class ArcChart extends Component {
         const centerTx = this.centerTranslation(radius);
 
         //#region Outer arc
-        const outerArcPath = d3Arc()
+
+        // Creating the outer arc with no width
+        const outerArcPathGenerator = d3Arc()
             .innerRadius(radius - ringWidth - ringInset)
-            .outerRadius(radius - ringInset)
+            .outerRadius(radius - ringWidth - ringInset)
             .startAngle(this.deg2rad(minAngle))
-            .endAngle(this.deg2rad(maxAngle));
+            .endAngle(this.deg2rad(maxAngle))().split(/[A-Z]/);
+
+        const outerArcPath = "M" + outerArcPathGenerator[1] + "A" + outerArcPathGenerator[2];
 
         const outerArcsData = svgMerge.selectAll('g.outer_arc').data([null]);
         const outerArcEnter = outerArcsData.enter()
@@ -92,11 +97,16 @@ class ArcChart extends Component {
                 return this.deg2rad(minAngle + (ratio * range))
             });
 
-        const innerArcsData = svgMerge.selectAll('g.inner_arc').data(tickData);
+        const innerArcsContainer = svgMerge.selectAll('g.inner_arcs').data([null]);
+        const innerArcsContainerEnter = innerArcsContainer.enter()
+            .append('g')
+            .attr('class', 'inner_arcs')
+            .attr('transform', centerTx)
+
+        const innerArcsData = innerArcsContainerEnter.selectAll('g.inner_arc').data(tickData);
         const innerArcsEnter = innerArcsData.enter()
             .append('g')
             .attr('class', 'inner_arc')
-            .attr('transform', centerTx)
 
         innerArcsEnter.append('path')
             .attr('fill', (d, i) => arcColorFn(d * (i + 1)))
@@ -111,7 +121,13 @@ class ArcChart extends Component {
             .range([0, 1])
             .domain([minValue, maxValue]);
         const ticks = scaleValue.ticks(majorTicks);
-        const labelsData = svgMerge.selectAll('g.label').data(ticks);
+
+        const labelsContainer = svgMerge.selectAll('g.labels').data([null]);
+        const labelsContainerEnter = labelsContainer.enter()
+            .append('g')
+            .attr('class', 'labels');
+
+        const labelsData = labelsContainerEnter.selectAll('g.label').data(ticks);
         const labelsEnter = labelsData.enter()
             .append('g')
             .attr('class', 'label')
@@ -186,6 +202,10 @@ class ArcChart extends Component {
 
         //#endregion
 
+        //#region Ticks-
+
+        //#endregion
+
     }
 
     deg2rad = (deg) => {
@@ -197,7 +217,11 @@ class ArcChart extends Component {
     }
 
     render() {
-        const { width, height } = this.props;
+        const {
+            width,
+            height
+        } = this.props;
+
         return (
             <svg ref={element => this.element = element} width={width} height={'100%'} className='gauge' >
             </svg>
