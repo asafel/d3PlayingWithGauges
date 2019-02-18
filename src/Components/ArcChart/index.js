@@ -13,11 +13,11 @@ class ArcChart extends Component {
     }
 
     componentDidMount() {
-        this.createArcChart()
+        this.createArcChart();
     }
 
     componentDidUpdate() {
-        this.createArcChart()
+        this.createArcChart();
     }
 
     createArcChart() {
@@ -37,25 +37,20 @@ class ArcChart extends Component {
             values,
             curValue,
             height,
-            angles
+            angles,
+            majorTicks
         } = this.props;
 
         const [minValue, maxValue] = values;
         const [minAngle, maxAngle] = angles;
         const range = maxAngle - minAngle;
-        const element = this.element;
         const Pi = Math.PI;
-        const radius = height - 10;
-        const innerRadius = radius / 2;
-        const majorTicks = 5;
-        const DURATION = 2500;
+        const radius = height - 20;
+        const innerRadius = radius / 2.5;
         const ringWidth = 15;
-        const ringInset = 20;
-        const arcColorFn = d3InterpolateHsl(d3Rgb('red'), d3Rgb('#8abe6e'));
 
-        const svgData = d3Select(element).data([null]);
+        const svgData = d3Select(this.element).data([null]);
         const tickData = d3Range(majorTicks).map(() => 1 / majorTicks);
-        const svgMerge = svgData.merge(svgData);
         const centerTx = this.centerTranslation(radius);
         const scaleValue = d3ScaleLinear()
             .range([0, 1])
@@ -66,14 +61,14 @@ class ArcChart extends Component {
 
         // Creating the outer arc with no width
         const outerArcPathGenerator = d3Arc()
-            .innerRadius(radius - ringWidth - ringInset)
-            .outerRadius(radius - ringWidth - ringInset)
+            .innerRadius(radius - ringWidth)
+            .outerRadius(radius - ringWidth)
             .startAngle(this.deg2rad(minAngle))
             .endAngle(this.deg2rad(maxAngle))().split(/[A-Z]/);
 
         const outerArcPath = "M" + outerArcPathGenerator[1] + "A" + outerArcPathGenerator[2];
 
-        const outerArcData = svgMerge.select('g.outer_arc').attr('transform', centerTx).selectAll('path').data([null]);
+        const outerArcData = svgData.select('g.outer_arc').attr('transform', centerTx).selectAll('path').data([null]);
         outerArcData.exit().remove();
         outerArcData.enter()
             .append('path')
@@ -110,7 +105,7 @@ class ArcChart extends Component {
             }
         }  
 
-        const outerArcTicksData = svgMerge.select('g.ticks_container').attr('transform', centerTx).selectAll('line').data(extendedTicksArr);
+        const outerArcTicksData = svgData.select('g.ticks_container').attr('transform', centerTx).selectAll('line').data(extendedTicksArr);
         outerArcTicksData.exit().remove();
         outerArcTicksData.enter()
             .append('line')
@@ -141,7 +136,7 @@ class ArcChart extends Component {
             .attr('transform', (d) => {
                 const val = typeof d === "number" ? d : d.val;
                 const ratio = scaleValue(val);
-                const outerRadiusinnerStroke = radius - ringWidth - ringInset;
+                const outerRadiusinnerStroke = radius - ringWidth;
                 const minAngleRad = this.deg2rad(minAngle);
                 const edgeSize = this.deg2rad(range);
                 const newAngle = minAngle + (ratio * range);
@@ -155,9 +150,11 @@ class ArcChart extends Component {
         //#endregion
 
         //#region Inner arcs
+        
+        const arcColorFn = d3InterpolateHsl(d3Rgb('red'), d3Rgb('#8abe6e'));        
         const innerArcPath = d3Arc()
-            .innerRadius(innerRadius - ringWidth - ringInset)
-            .outerRadius(innerRadius - ringInset)
+            .innerRadius(innerRadius - ringWidth)
+            .outerRadius(innerRadius)
             .startAngle((d, i) => {
                 const ratio = d * i
                 return this.deg2rad(minAngle + (ratio * range))
@@ -167,7 +164,7 @@ class ArcChart extends Component {
                 return this.deg2rad(minAngle + (ratio * range))
             });
 
-        const innerArcsData = svgMerge.select('g.inner_arcs').attr('transform', centerTx).selectAll('path').data(tickData);
+        const innerArcsData = svgData.select('g.inner_arcs').attr('transform', centerTx).selectAll('path').data(tickData);
         innerArcsData.exit().remove();
         innerArcsData.enter()
             .append('path')
@@ -180,7 +177,7 @@ class ArcChart extends Component {
 
         //#region Labels
 
-        const labelsData = svgMerge.select('g.labels').selectAll('text').data(ticks);
+        const labelsData = svgData.select('g.labels').selectAll('text').data(ticks);
         labelsData.exit().remove();
         labelsData.enter()
             .append('text')
@@ -191,8 +188,8 @@ class ArcChart extends Component {
             .text(d => d)
             .attr('transform', (d) => {
                 const ratio = scaleValue(d);
-                const innerRadiusOuterStroke = innerRadius - ringInset;
-                const outerRadiusinnerStroke = radius - ringWidth - ringInset;
+                const innerRadiusOuterStroke = innerRadius;
+                const outerRadiusinnerStroke = radius - ringWidth;
                 const middlePointArcs = (innerRadiusOuterStroke + outerRadiusinnerStroke) / 2;
                 const minAngleRad = this.deg2rad(minAngle);
                 const edgeSize = this.deg2rad(range);
@@ -208,8 +205,8 @@ class ArcChart extends Component {
 
         //#region Pointer
 
-        const pointerWidth = 7;
-        const pointerHeadLengthPercent = 1.3;
+        const pointerWidth = 8;
+        const pointerHeadLengthPercent = 1.5;
         const pointerHeadLength = Math.round(innerRadius * pointerHeadLengthPercent);
         const pointerTailLength = 5;
         const arrowColor = '#5eb2d6';
@@ -224,8 +221,8 @@ class ArcChart extends Component {
         const pointerLine = d3Line().curve(d3CurveLinear);
         const ratio = scaleValue(curValue);
         const newAngle = minAngle + (ratio * range);
-
-        const pointerData = svgMerge.select('g.pointer').attr('transform', centerTx).selectAll('path').data([lineData]);
+        const DURATION = 2500;
+        const pointerData = svgData.select('g.pointer').attr('transform', centerTx).selectAll('path').data([lineData]);
         pointerData.exit().remove();
         pointerData.enter()
             .append('path')
@@ -241,7 +238,7 @@ class ArcChart extends Component {
         //#endregion
 
         //#region Value text
-        const valueTextEnter = svgMerge.select('text.value');
+        const valueTextEnter = svgData.select('text.value');
         valueTextEnter.exit().remove();
         valueTextEnter.enter()
             .append('text')
@@ -249,10 +246,11 @@ class ArcChart extends Component {
             .attr('font-size', 30)
             .attr('fill', '#1a88b7')
             .attr('font-weight', 400)
-            .attr('transform', `translate(${radius},${radius + 60})`)
+            .attr('transform', `translate(${radius},${radius + 80})`)
             .text(Math.ceil(curValue));
 
         //#endregion
+
     }
 
     deg2rad = (deg) => {

@@ -29,6 +29,7 @@ class Gauge extends Component {
                     size={[500, 500]}
                     values={[0, 250]}
                     angles={[-120, 120]}
+                    majorTicks={5}
                     height={250}
                     width={500}
                     curValue={this.state.curValue} />
