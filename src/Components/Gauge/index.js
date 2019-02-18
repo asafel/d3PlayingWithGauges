@@ -23,16 +23,21 @@ class Gauge extends Component {
     }
 
     render() {
+
+        const arcChart = <ArcChart
+            size={[500, 500]}
+            values={[0, 250]}
+            angles={[-90, 90]}
+            majorTicks={5}
+            colors={['#de4b25', '#f0bf2c', '#8abe6e']}
+            height={250}
+            width={500}
+            curValue={this.state.curValue} />;
+
+
         return (
             <div className="gauge-main" >
-                <ArcChart
-                    size={[500, 500]}
-                    values={[0, 250]}
-                    angles={[-120, 120]}
-                    majorTicks={5}
-                    height={250}
-                    width={500}
-                    curValue={this.state.curValue} />
+                {arcChart}
             </div>
         );
     }
