@@ -73,28 +73,19 @@ class ArcChart extends Component {
 
         const outerArcPath = "M" + outerArcPathGenerator[1] + "A" + outerArcPathGenerator[2];
 
-        const outerArcsData = svgMerge.selectAll('g.outer_arc').data([null]);
-        const outerArcEnter = outerArcsData.enter()
-            .append('g')
-            .attr('class', 'outer_arc')
-            .attr('transform', centerTx)
-
-        outerArcEnter.append('path')
+        const outerArcData = svgMerge.select('g.outer_arc').attr('transform', centerTx).selectAll('path').data([null]);
+        outerArcData.exit().remove();
+        outerArcData.enter()
+            .append('path')
+            .merge(outerArcData)
             .attr('fill', 'transparent')
             .attr('stroke', 'black')
             .attr('opacity', 0.6)
-            .attr('d', outerArcPath)
-
-        outerArcsData.merge(outerArcEnter)
+            .attr('d', outerArcPath);
 
         //#endregion
 
         //#region Ticks-
-        const outerArcTicks = svgMerge.selectAll('g.ticks_container').data([null]);
-        const outerArcTicksEnter = outerArcTicks.enter()
-            .append('g')
-            .attr('class', 'ticks_container')
-            .attr('transform', centerTx)
 
         // Extending our ticks data in order to include new (smaller) ticks
         // "extendedTicksArr" will be an array containing numbers and objects {representing the virtual ticks}
@@ -117,11 +108,13 @@ class ArcChart extends Component {
                 });
                 newVal += margin;
             }
-        }
+        }  
 
-        const outerArcTicksData = outerArcTicksEnter.selectAll('g.tick').data(extendedTicksArr);
-        const outerArcTicksDataEnter = outerArcTicksData.enter()
+        const outerArcTicksData = svgMerge.select('g.ticks_container').attr('transform', centerTx).selectAll('line').data(extendedTicksArr);
+        outerArcTicksData.exit().remove();
+        outerArcTicksData.enter()
             .append('line')
+            .merge(outerArcTicksData)
             .attr('class', (d) => {
                 let className = 'tick';
                 if (typeof d === "object") {
@@ -174,36 +167,28 @@ class ArcChart extends Component {
                 return this.deg2rad(minAngle + (ratio * range))
             });
 
-        const innerArcsContainer = svgMerge.selectAll('g.inner_arcs').data([null]);
-        const innerArcsContainerEnter = innerArcsContainer.enter()
-            .append('g')
-            .attr('class', 'inner_arcs')
-            .attr('transform', centerTx)
-
-        const innerArcsData = innerArcsContainerEnter.selectAll('g.inner_arc').data(tickData);
-        const innerArcsEnter = innerArcsData.enter()
-            .append('g')
+        const innerArcsData = svgMerge.select('g.inner_arcs').attr('transform', centerTx).selectAll('path').data(tickData);
+        innerArcsData.exit().remove();
+        innerArcsData.enter()
+            .append('path')
+            .merge(innerArcsData)
             .attr('class', 'inner_arc')
-
-        innerArcsEnter.append('path')
             .attr('fill', (d, i) => arcColorFn(d * (i + 1)))
             .attr('d', innerArcPath)
-
-        innerArcsData.merge(innerArcsEnter)
 
         //#endregion
 
         //#region Labels
-        const labelsContainer = svgMerge.selectAll('g.labels').data([null]);
-        const labelsContainerEnter = labelsContainer.enter()
-            .append('g')
-            .attr('class', 'labels');
 
-        const labelsData = labelsContainerEnter.selectAll('g.label').data(ticks);
-        const labelsEnter = labelsData.enter()
-            .append('g')
-            .attr('class', 'label')
+        const labelsData = svgMerge.select('g.labels').selectAll('text').data(ticks);
+        labelsData.exit().remove();
+        labelsData.enter()
+            .append('text')
+            .merge(labelsData)
+            .attr('class', 'gauge_label')
+            .attr('dominant-baseline', 'central')
             .attr('text-anchor', 'middle')
+            .text(d => d)
             .attr('transform', (d) => {
                 const ratio = scaleValue(d);
                 const innerRadiusOuterStroke = innerRadius - ringInset;
@@ -218,23 +203,6 @@ class ArcChart extends Component {
 
                 return `translate(${x},${y})`;
             });
-
-        labelsData.exit().remove()
-        labelsEnter
-            .append('text')
-            .text(d => d);
-
-        // const labelsMerge = labelsData.merge(labelsEnter)
-
-        // labelsMerge.selectAll('text')
-        //     .text(d => d)
-        //     .transition()
-        //     .duration(DURATION)
-        //     .attr('transform', (d) => {
-        //         const ratio = scaleValue(d);
-        //         const newAngle = minAngle + (ratio * range);
-        //         return 'rotate(' + newAngle + ') translate(0,' + (innerRadius-radius-40) + ')';
-        //     })
 
         //#endregion
 
@@ -254,22 +222,17 @@ class ArcChart extends Component {
         ];
 
         const pointerLine = d3Line().curve(d3CurveLinear);
-        const pointerData = svgMerge.selectAll('g.pointer').data([lineData]);
-        const pointerEnter = pointerData.enter()
-            .append('g')
-            .attr('class', 'pointer')
-            .attr('transform', centerTx);
-
-        pointerEnter.append('path')
-            .attr('d', pointerLine)
-            .attr('transform', `rotate(${minAngle})`)
-            .attr('fill', arrowColor);
-
-        const pointerMerge = pointerData.merge(pointerEnter);
         const ratio = scaleValue(curValue);
         const newAngle = minAngle + (ratio * range);
 
-        pointerMerge.select('path')
+        const pointerData = svgMerge.select('g.pointer').attr('transform', centerTx).selectAll('path').data([lineData]);
+        pointerData.exit().remove();
+        pointerData.enter()
+            .append('path')
+            .attr('d', pointerLine)
+            .attr('fill', arrowColor)
+            .attr('transform', `rotate(${minAngle})`)
+            .merge(pointerData)
             .transition()
             .duration(DURATION)
             .ease(d3EaseElastic)
@@ -278,17 +241,17 @@ class ArcChart extends Component {
         //#endregion
 
         //#region Value text
-        const valueTextEnter = svgMerge.select('g.value').selectAll('text').data([null]);
+        const valueTextEnter = svgMerge.select('text.value');
         valueTextEnter.exit().remove();
         valueTextEnter.enter()
             .append('text')
             .merge(valueTextEnter)
-            .attr('font-size', 26)
+            .attr('font-size', 30)
             .attr('fill', '#1a88b7')
-            .attr('font-weight', 'bold')
-            .attr('transform', `translate(${radius},${radius + 85})`)
+            .attr('font-weight', 400)
+            .attr('transform', `translate(${radius},${radius + 60})`)
             .text(Math.ceil(curValue));
-            
+
         //#endregion
     }
 
@@ -312,8 +275,12 @@ class ArcChart extends Component {
                 height={'100%'}
                 className='gauge'
                 ref={element => this.element = element} >
-                <g className="value" textAnchor={'middle'} />
-
+                <g className="outer_arc" />
+                <g className="ticks_container" />
+                <g className="inner_arcs" />
+                <g className="labels" />
+                <g className="pointer" />
+                <text className="value" textAnchor={'middle'} />
             </svg>
         );
     };
