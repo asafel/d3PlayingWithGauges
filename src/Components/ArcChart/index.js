@@ -208,7 +208,7 @@ class ArcChart extends Component {
         const pointerHeadLengthPercent = 1.5;
         const pointerHeadLength = Math.round(innerRadius * pointerHeadLengthPercent);
         const pointerTailLength = 5;
-        const arrowColor = '#5eb2d6';
+        const pointerColor = '#5eb2d6';
         const lineData = [
             [pointerWidth / 2, 0],
             [0, -pointerHeadLength],
@@ -227,7 +227,7 @@ class ArcChart extends Component {
         pointerData.enter()
             .append('path')
             .attr('d', pointerLine)
-            .attr('fill', arrowColor)
+            .attr('fill', pointerColor)
             .attr('transform', `rotate(${minAngle})`)
             .merge(pointerData)
             .transition()

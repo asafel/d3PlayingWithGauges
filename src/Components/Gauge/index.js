@@ -1,7 +1,8 @@
 import React, {
     Component
 } from 'react';
-import ArcChart from '../ArcChart'
+import ArcChart from '../ArcChart';
+import CylinderChart from '../CylinderChart';
 import './style.scss';
 
 class Gauge extends Component {
@@ -34,9 +35,19 @@ class Gauge extends Component {
             width={500}
             curValue={this.state.curValue} />;
 
+        const cylinderChart = <CylinderChart
+            size={[500, 500]}
+            values={[0, 250]}
+            majorTicks={5}
+            colors={['#8abe6e', '#f0bf2c', '#de4b25']}
+            height={200}
+            width={300}
+            barWidth={22}
+            curValue={this.state.curValue} />;
 
         return (
             <div className="gauge-main" >
+                {cylinderChart}
                 {arcChart}
             </div>
         );
