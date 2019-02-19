@@ -37,7 +37,9 @@ class CylinderChart extends Component {
             width,
             majorTicks,
             colors,
-            barWidth
+            barWidth,
+            hasSecondTicks,
+            isTriangleShape
         } = this.props;
 
         const [minValue, maxValue] = values;
@@ -46,6 +48,7 @@ class CylinderChart extends Component {
             .range([0, 1])
             .domain([maxValue, minValue]);
         const DURATION = 1200;
+        const ticksWidth = 16;
         const marginRight = width / 2 - barWidth;
         const ticks = scaleValue.ticks(majorTicks);
         const ratio = scaleValue(curValue);
@@ -53,16 +56,27 @@ class CylinderChart extends Component {
         //#region bar
 
         const colorRange = d3Range(colors.length).map(() => 1 / colors.length);
-        const barData = svgData.select('g.bar').selectAll('rect').data(colorRange);
-        barData.exit().remove();
-        barData.enter()
-            .append('rect')
-            .merge(barData)
-            .attr('height', height / colors.length)
-            .attr('width', barWidth)
-            .attr('y', (_, i) => height / colors.length * i)
-            .attr('x', marginRight)
-            .attr('fill', (_, i) => colors[i])
+        if (!isTriangleShape) {
+            const barData = svgData.select('g.bar').selectAll('rect').data(colorRange);
+            barData.exit().remove();
+            barData.enter()
+                .append('rect')
+                .merge(barData)
+                .attr('height', height / colors.length)
+                .attr('width', barWidth)
+                .attr('y', (_, i) => height / colors.length * i)
+                .attr('x', marginRight)
+                .attr('fill', (_, i) => colors[i])
+        } else {
+            const triangleBarData = svgData.select('g.bar').selectAll('path').data(colorRange);
+            triangleBarData.exit().remove();
+            triangleBarData.enter()
+                .append('path')
+                .merge(triangleBarData)
+                .attr('d', `M0,0L0,${height}L${barWidth},0`)
+                .attr('fill', 'url(#triangle_bar)')
+                .attr('transform', `translate(${marginRight},${0})`)
+        }
 
         //#endregion
 
@@ -111,12 +125,12 @@ class CylinderChart extends Component {
             .attr('x2', (d) => {
                 if (typeof d === "object") {
                     if (d.size === "S") {
-                        return 6;
+                        return ticksWidth * 0.375;
                     } else {
-                        return 10;
+                        return ticksWidth * 0.625;
                     }
                 }
-                return 16;
+                return ticksWidth;
             })
             .attr('transform', (d) => {
                 const val = typeof d === "number" ? d : d.val;
@@ -140,6 +154,59 @@ class CylinderChart extends Component {
                 return `translate(${marginRight - 5},0)`;
             });
 
+        if (hasSecondTicks) {
+            // Right side ticks
+            const rightTicksData = svgData.select('g.ticks_container').selectAll('line.right').data(extendedTicksArr);
+            rightTicksData.exit().remove();
+            rightTicksData.enter()
+                .append('line')
+                .merge(rightTicksData)
+                .attr('class', (d) => {
+                    let className = 'right tick';
+                    if (typeof d === "object") {
+                        if (d.size === "S") {
+                            className += ' smalltick';
+                        } else {
+                            className += ' mediumtick';
+                        }
+                    }
+                    return className;
+                })
+                .attr('stroke', 'black')
+                .attr('opacity', 0.6)
+                .attr('x2', (d) => {
+                    if (typeof d === "object") {
+                        if (d.size === "S") {
+                            return ticksWidth * 0.375;
+                        } else {
+                            return ticksWidth * 0.625;
+                        }
+                    }
+                    return ticksWidth;
+                })
+                .attr('transform', (d) => {
+                    const val = typeof d === "number" ? d : d.val;
+                    const ratio = scaleValue(val);
+                    return `translate(${barWidth + marginRight + 4},${ratio * height - 1})`;
+                });
+
+
+            // Right vertical ticks line
+            const verticalRightLine = svgData.select('g.ticks_container').selectAll('line.right.vertical').data([null]);
+            verticalRightLine.exit().remove();
+            verticalRightLine.enter()
+                .append('line')
+                .merge(verticalRightLine)
+                .attr('class', 'right vertical')
+                .attr('stroke', 'black')
+                .attr('opacity', 0.6)
+                .attr('y1', -1)
+                .attr('y2', height)
+                .attr('transform', (d) => {
+                    return `translate(${barWidth + marginRight + 4},0)`;
+                });
+        }
+
         //#endregion
 
         //#region Labels
@@ -155,8 +222,7 @@ class CylinderChart extends Component {
             .text(d => d)
             .attr('transform', (d) => {
                 const ratio = scaleValue(d);
-
-                return `translate(${marginRight - 35},${ratio * height - 2})`;
+                return `translate(${marginRight - (ticksWidth * 2) - 8},${ratio * height - 2})`;
             });
 
         //#endregion
@@ -177,12 +243,12 @@ class CylinderChart extends Component {
             .append('path')
             .attr('d', pointerLine)
             .attr('fill', pointerColor)
-            .attr('transform', `translate(${barWidth + marginRight},${height})`)
+            .attr('transform', `translate(${barWidth + marginRight + 5},${height})`)
             .merge(pointerData)
             .transition()
             .duration(DURATION)
             .ease(d3EaseSin)
-            .attr('transform', `translate(${barWidth + marginRight},${ratio * height})`);
+            .attr('transform', `translate(${barWidth + marginRight + 5},${ratio * height})`);
         //#endregion
 
         //#region Value text
@@ -200,10 +266,24 @@ class CylinderChart extends Component {
     }
 
     render() {
-        const { width, height } = this.props;
+        const { width, height, isTriangleShape } = this.props;
+
+        const defs = !isTriangleShape ? null :
+            <defs>
+                <linearGradient gradientTransform="rotate(90)" id="triangle_bar" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style={{ stopColor: '#8abe6e', stopOpacity: 1 }} />
+                    <stop offset="33%" style={{ stopColor: '#8abe6e', stopOpacity: 1 }} />
+                    <stop offset="33%" style={{ stopColor: '#f0bf2c', stopOpacity: 1 }} />
+                    <stop offset="67%" style={{ stopColor: '#f0bf2c', stopOpacity: 1 }} />
+                    <stop offset="67%" style={{ stopColor: '#de4b25', stopOpacity: 1 }} />
+                    <stop offset="100%" style={{ stopColor: '#de4b25', stopOpacity: 1 }} />
+                </linearGradient>
+            </defs>
+
 
         return (
             <svg viewBox="0 -40 300 300" width={width} height={height + 80} className='cylinder_gauge' ref={element => this.element = element} >
+                {defs}
                 <g className="ticks_container" />
                 <g className="pointer" />
                 <g className="labels" />
