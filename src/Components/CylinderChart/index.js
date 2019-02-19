@@ -187,7 +187,7 @@ class CylinderChart extends Component {
                 .attr('transform', (d) => {
                     const val = typeof d === "number" ? d : d.val;
                     const ratio = scaleValue(val);
-                    return `translate(${barWidth + marginRight + 4},${ratio * height - 1})`;
+                    return `translate(${barWidth + marginRight + 5},${ratio * height - 1})`;
                 });
 
 
@@ -203,7 +203,7 @@ class CylinderChart extends Component {
                 .attr('y1', -1)
                 .attr('y2', height)
                 .attr('transform', (d) => {
-                    return `translate(${barWidth + marginRight + 4},0)`;
+                    return `translate(${barWidth + marginRight + 5},0)`;
                 });
         }
 
@@ -229,7 +229,7 @@ class CylinderChart extends Component {
 
         //#region Pointer
 
-        const pointerWidth = barWidth - 3;
+        const pointerWidth = 18;
         const pointerColor = '#5eb2d6';
         const pointerLineData = [
             [0, 0],
