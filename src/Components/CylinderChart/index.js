@@ -111,12 +111,12 @@ class CylinderChart extends Component {
             .attr('x2', (d) => {
                 if (typeof d === "object") {
                     if (d.size === "S") {
-                        return 10;
+                        return 6;
                     } else {
-                        return 16;
+                        return 10;
                     }
                 }
-                return 24;
+                return 16;
             })
             .attr('transform', (d) => {
                 const val = typeof d === "number" ? d : d.val;
@@ -138,6 +138,25 @@ class CylinderChart extends Component {
             .attr('y2', height)
             .attr('transform', (d) => {
                 return `translate(${marginRight - 5},0)`;
+            });
+
+        //#endregion
+
+        //#region Labels
+        const labelsData = svgData.select('g.labels').selectAll('text').data(ticks);
+        labelsData.exit().remove();
+        labelsData.enter()
+            .append('text')
+            .merge(labelsData)
+            .attr('class', 'gauge_label')
+            .attr('dominant-baseline', 'central')
+            .attr('font-size', 12)
+            .attr('text-anchor', 'middle')
+            .text(d => d)
+            .attr('transform', (d) => {
+                const ratio = scaleValue(d);
+
+                return `translate(${marginRight - 35},${ratio * height - 2})`;
             });
 
         //#endregion
@@ -187,6 +206,7 @@ class CylinderChart extends Component {
             <svg viewBox="0 -40 300 300" width={width} height={height + 80} className='cylinder_gauge' ref={element => this.element = element} >
                 <g className="ticks_container" />
                 <g className="pointer" />
+                <g className="labels" />
                 <g className="bar" />
                 <text className="value" textAnchor={'middle'} />
             </svg>
