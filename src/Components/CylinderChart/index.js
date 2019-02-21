@@ -23,7 +23,6 @@ class CylinderChart extends Component {
     createArcChart() {
         const {
             select: d3Select,
-            range: d3Range,
             scaleLinear: d3ScaleLinear,
             line: d3Line,
             curveLinear: d3CurveLinear,
@@ -36,13 +35,13 @@ class CylinderChart extends Component {
             height,
             width,
             majorTicks,
-            colors,
             barWidth,
             hasSecondTicks,
             isTriangleShape
         } = this.props;
 
-        const [minValue, maxValue] = values;
+        const minValue = values[0].min || 0;
+        const maxValue = values[values.length - 1].max || 100;
         const svgData = d3Select(this.element).data([null]);
         const scaleValue = d3ScaleLinear()
             .range([0, 1])
@@ -55,42 +54,20 @@ class CylinderChart extends Component {
 
         //#region bar
 
-        const colorRange = d3Range(colors.length).map(() => 1 / colors.length);
-        if (!isTriangleShape) {
-            const barData = svgData.select('g.bar').selectAll('rect').data(colorRange);
-            barData.exit().remove();
-            barData.enter()
-                .append('rect')
-                .merge(barData)
-                .attr('height', height / colors.length)
-                .attr('width', barWidth)
-                .attr('y', (_, i) => height / colors.length * i)
-                .attr('x', marginRight)
-                .attr('fill', (_, i) => colors[i])
-
-        } else {
-            const triangleBarData = svgData.select('g.bar').selectAll('path').data(colorRange);
-            triangleBarData.exit().remove();
-            triangleBarData.enter()
-                .append('path')
-                .merge(triangleBarData)
-                .attr('d', `M0,0L0,${height}L${barWidth},0Z`)
-                .attr('fill', 'url(#triangle_bar)')
-                .attr('transform', `translate(${marginRight},${0})`);
-
-            /* 
-            // Another way to create the triangle shape is to create a rect and clip it
-            const triangleBarData = svgData.select('g.bar').selectAll('rect').data(colorRange);
-            triangleBarData.exit().remove();
-            triangleBarData.enter()
-                .append('rect')
-                .merge(triangleBarData)
-                .attr('height', height)
-                .attr('width', barWidth)
-                .attr('fill', 'url(#triangle_bar)')
-                .attr('transform', `translate(${marginRight},${0})`)
-                .attr('clip-path', `polygon(0 0, 100% 0, 0 100%)`); */
-        }
+        // Using clip-path to create the triangle shape
+        const barData = svgData.select('g.bar')
+            .attr('clip-path', isTriangleShape ? 'polygon(0 0, 100% 0, 0 100%)' : null)
+            .selectAll('rect')
+            .data(values);
+        barData.exit().remove();
+        barData.enter()
+            .append('rect')
+            .merge(barData)
+            .attr('x', marginRight)
+            .attr('y', d => (scaleValue(d.max) * height))
+            .attr('width', barWidth)
+            .attr('height', d => (scaleValue(d.min) - scaleValue(d.max)) * height)
+            .attr('fill', d => d.color)
 
         //#endregion
 
@@ -281,24 +258,10 @@ class CylinderChart extends Component {
     }
 
     render() {
-        const { width, height, isTriangleShape } = this.props;
-
-        const defs = !isTriangleShape ? null :
-            <defs>
-                <linearGradient gradientTransform="rotate(90)" id="triangle_bar" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{ stopColor: '#8abe6e', stopOpacity: 1 }} />
-                    <stop offset="33%" style={{ stopColor: '#8abe6e', stopOpacity: 1 }} />
-                    <stop offset="33%" style={{ stopColor: '#f0bf2c', stopOpacity: 1 }} />
-                    <stop offset="67%" style={{ stopColor: '#f0bf2c', stopOpacity: 1 }} />
-                    <stop offset="67%" style={{ stopColor: '#de4b25', stopOpacity: 1 }} />
-                    <stop offset="100%" style={{ stopColor: '#de4b25', stopOpacity: 1 }} />
-                </linearGradient>
-            </defs>
-
+        const { width, height } = this.props;
 
         return (
             <svg viewBox="0 -40 300 300" width={width} height={height + 80} className='cylinder_gauge' ref={element => this.element = element} >
-                {defs}
                 <g className="ticks_container" />
                 <g className="pointer" />
                 <g className="labels" />

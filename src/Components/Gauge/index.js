@@ -27,16 +27,16 @@ class Gauge extends Component {
         const bands = [
             {
                 min: 0,
-                max: 80,
+                max: 120,
                 color: '#de4b25'
             },
             {
-                min: 80,
-                max: 200,
+                min: 120,
+                max: 180,
                 color: '#f0bf2c'
             },
             {
-                min: 200,
+                min: 180,
                 max: 250,
                 color: '#8abe6e'
             },
@@ -51,9 +51,8 @@ class Gauge extends Component {
             curValue={this.state.curValue} />;
 
         const cylinderChart = <CylinderChart
-            values={[0, 250]}
+            values={bands}
             majorTicks={5}
-            colors={['#8abe6e', '#f0bf2c', '#de4b25']}
             height={200}
             width={300}
             barWidth={20}
@@ -61,9 +60,8 @@ class Gauge extends Component {
             curValue={this.state.curValue} />;
 
         const cylinderChart2 = <CylinderChart
-            values={[0, 250]}
+        values={bands}
             majorTicks={5}
-            colors={['#8abe6e', '#f0bf2c', '#de4b25']}
             height={200}
             width={300}
             barWidth={20}
@@ -72,12 +70,11 @@ class Gauge extends Component {
             curValue={this.state.curValue} />;
 
         const cylinderChart3 = <CylinderChart
-            values={[0, 250]}
+        values={bands}
             majorTicks={5}
-            colors={['#8abe6e', '#f0bf2c', '#de4b25']}
             height={200}
             width={300}
-            barWidth={20}
+            barWidth={22}
             isTriangleShape={true}
             hasSecondTicks={false}
             curValue={this.state.curValue} />;
