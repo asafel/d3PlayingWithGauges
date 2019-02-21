@@ -23,13 +23,10 @@ class ArcChart extends Component {
     createArcChart() {
         const {
             select: d3Select,
-            range: d3Range,
             scaleLinear: d3ScaleLinear,
-            scaleBand: d3ScaleBand,
             line: d3Line,
             curveLinear: d3CurveLinear,
             arc: d3Arc,
-            
             easeElastic: d3EaseElastic,
         } = d3
 
@@ -39,19 +36,17 @@ class ArcChart extends Component {
             height,
             angles,
             majorTicks,
-            colors
         } = this.props;
 
         const minValue = values[0].min || 0;
         const maxValue = values[values.length - 1].max || 100;
         const [minAngle, maxAngle] = angles;
-        const range = maxAngle - minAngle;
+        const angleRangeDeg = maxAngle - minAngle;
         const Pi = Math.PI;
         const radius = height - 20;
         const innerRadius = radius / 2.5;
         const ringWidth = 15;
         const ringInset = 20;
-
         const svgData = d3Select(this.element).data([null]);
         const centerTx = this.centerTranslation(radius);
         const scaleValue = d3ScaleLinear()
@@ -69,7 +64,6 @@ class ArcChart extends Component {
             .endAngle(this.deg2rad(maxAngle))().split(/[A-Z]/);
 
         const outerArcPath = "M" + outerArcPathGenerator[1] + "A" + outerArcPathGenerator[2];
-
         const outerArcData = svgData.select('g.outer_arc').attr('transform', centerTx).selectAll('path').data([null]);
         outerArcData.exit().remove();
         outerArcData.enter()
@@ -140,8 +134,8 @@ class ArcChart extends Component {
                 const ratio = scaleValue(val);
                 const outerRadiusinnerStroke = radius - ringWidth - ringInset;
                 const minAngleRad = this.deg2rad(minAngle);
-                const edgeSize = this.deg2rad(range);
-                const newAngle = minAngle + (ratio * range);
+                const edgeSize = this.deg2rad(angleRangeDeg);
+                const newAngle = minAngle + (ratio * angleRangeDeg);
 
                 const x = outerRadiusinnerStroke * Math.cos(ratio * edgeSize + minAngleRad - (Pi / 2));
                 const y = outerRadiusinnerStroke * Math.sin(ratio * edgeSize + minAngleRad - (Pi / 2));
@@ -153,25 +147,20 @@ class ArcChart extends Component {
 
         //#region Inner arcs
 
-        const arcScale = d3ScaleLinear().domain([minValue, maxValue]).range([0,1]);
-
-        const  innerArcPath = d3Arc()
+        const arcScale = d3ScaleLinear().domain([minValue, maxValue]).range([0, 1]);
+        const innerArcPath = d3Arc()
             .innerRadius(innerRadius - ringWidth - ringInset)
             .outerRadius(innerRadius - ringInset)
-            .startAngle((d, i) => {
-               return this.deg2rad(minAngle + arcScale(d.min) * range);
-            })
-            .endAngle((d, i) => {
-                return this.deg2rad(minAngle + arcScale(d.max) * range);
-            });
-        
+            .startAngle(d => this.deg2rad(minAngle + (arcScale(d.min) * angleRangeDeg)))
+            .endAngle(d => this.deg2rad(minAngle + (arcScale(d.max) * angleRangeDeg)));
+
         const innerArcsData = svgData.select('g.inner_arcs').attr('transform', centerTx).selectAll('path').data(values);
         innerArcsData.exit().remove();
         innerArcsData.enter()
             .append('path')
             .merge(innerArcsData)
             .attr('class', 'inner_arc')
-            .attr('fill', (d) => d.color)
+            .attr('fill', d => d.color)
             .attr('d', innerArcPath)
 
         //#endregion
@@ -193,7 +182,7 @@ class ArcChart extends Component {
                 const outerRadiusinnerStroke = radius - ringWidth - ringInset;
                 const middlePointArcs = (innerRadiusOuterStroke + outerRadiusinnerStroke) / 2;
                 const minAngleRad = this.deg2rad(minAngle);
-                const edgeSize = this.deg2rad(range);
+                const edgeSize = this.deg2rad(angleRangeDeg);
 
                 // Adding the radius in the end to use the center of the svg as the point of reference
                 const x = middlePointArcs * Math.cos(ratio * edgeSize + minAngleRad - (Pi / 2)) + radius;
@@ -221,7 +210,7 @@ class ArcChart extends Component {
 
         const pointerLine = d3Line().curve(d3CurveLinear);
         const ratio = scaleValue(curValue);
-        const newAngle = minAngle + (ratio * range);
+        const newAngle = minAngle + (ratio * angleRangeDeg);
         const DURATION = 2500;
 
         const pointerData = svgData.select('g.pointer').attr('transform', centerTx).selectAll('path').data([lineData]);

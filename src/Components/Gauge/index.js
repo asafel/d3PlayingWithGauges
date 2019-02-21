@@ -43,7 +43,7 @@ class Gauge extends Component {
         ]
         const arcChart = <ArcChart
             values={bands}
-            angles={[-120, 45]}
+            angles={[-60, 60]}
             majorTicks={5}
             colors={['#de4b25', '#f0bf2c', '#8abe6e']}
             height={250}
