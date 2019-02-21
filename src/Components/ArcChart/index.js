@@ -25,9 +25,11 @@ class ArcChart extends Component {
             select: d3Select,
             range: d3Range,
             scaleLinear: d3ScaleLinear,
+            scaleBand: d3ScaleBand,
             line: d3Line,
             curveLinear: d3CurveLinear,
             arc: d3Arc,
+            
             easeElastic: d3EaseElastic,
         } = d3
 
@@ -40,7 +42,8 @@ class ArcChart extends Component {
             colors
         } = this.props;
 
-        const [minValue, maxValue] = values;
+        const minValue = values[0].min || 0;
+        const maxValue = values[values.length - 1].max || 100;
         const [minAngle, maxAngle] = angles;
         const range = maxAngle - minAngle;
         const Pi = Math.PI;
@@ -150,26 +153,25 @@ class ArcChart extends Component {
 
         //#region Inner arcs
 
-        const innerArcPath = d3Arc()
+        const arcScale = d3ScaleLinear().domain([minValue, maxValue]).range([0,1]);
+
+        const  innerArcPath = d3Arc()
             .innerRadius(innerRadius - ringWidth - ringInset)
             .outerRadius(innerRadius - ringInset)
             .startAngle((d, i) => {
-                const ratio = d * i
-                return this.deg2rad(minAngle + (ratio * range))
+               return this.deg2rad(minAngle + arcScale(d.min) * range);
             })
             .endAngle((d, i) => {
-                const ratio = d * (i + 1)
-                return this.deg2rad(minAngle + (ratio * range))
+                return this.deg2rad(minAngle + arcScale(d.max) * range);
             });
-
-        const colorRange = d3Range(colors.length).map(() => 1 / colors.length)
-        const innerArcsData = svgData.select('g.inner_arcs').attr('transform', centerTx).selectAll('path').data(colorRange);
+        
+        const innerArcsData = svgData.select('g.inner_arcs').attr('transform', centerTx).selectAll('path').data(values);
         innerArcsData.exit().remove();
         innerArcsData.enter()
             .append('path')
             .merge(innerArcsData)
             .attr('class', 'inner_arc')
-            .attr('fill', (_, i) => colors[i])
+            .attr('fill', (d) => d.color)
             .attr('d', innerArcPath)
 
         //#endregion
@@ -221,7 +223,7 @@ class ArcChart extends Component {
         const ratio = scaleValue(curValue);
         const newAngle = minAngle + (ratio * range);
         const DURATION = 2500;
-        
+
         const pointerData = svgData.select('g.pointer').attr('transform', centerTx).selectAll('path').data([lineData]);
         pointerData.exit().remove();
         pointerData.enter()
@@ -271,7 +273,7 @@ class ArcChart extends Component {
                 className='gauge'
                 ref={element => this.element = element} >
                 <g className="outer_arc" />
-                <g className="ticks_container" /> 
+                <g className="ticks_container" />
                 <g className="inner_arcs" />
                 <g className="labels" />
                 <g className="pointer" />

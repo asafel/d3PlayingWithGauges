@@ -24,10 +24,26 @@ class Gauge extends Component {
     }
 
     render() {
-
+        const bands = [
+            {
+                min: 0,
+                max: 80,
+                color: '#de4b25'
+            },
+            {
+                min: 80,
+                max: 200,
+                color: '#f0bf2c'
+            },
+            {
+                min: 200,
+                max: 250,
+                color: '#8abe6e'
+            },
+        ]
         const arcChart = <ArcChart
-            values={[0, 250]}
-            angles={[-100, 100]}
+            values={bands}
+            angles={[-120, 45]}
             majorTicks={5}
             colors={['#de4b25', '#f0bf2c', '#8abe6e']}
             height={250}

@@ -67,15 +67,29 @@ class CylinderChart extends Component {
                 .attr('y', (_, i) => height / colors.length * i)
                 .attr('x', marginRight)
                 .attr('fill', (_, i) => colors[i])
+
         } else {
             const triangleBarData = svgData.select('g.bar').selectAll('path').data(colorRange);
             triangleBarData.exit().remove();
             triangleBarData.enter()
                 .append('path')
                 .merge(triangleBarData)
-                .attr('d', `M0,0L0,${height}L${barWidth},0`)
+                .attr('d', `M0,0L0,${height}L${barWidth},0Z`)
+                .attr('fill', 'url(#triangle_bar)')
+                .attr('transform', `translate(${marginRight},${0})`);
+
+            /* 
+            // Another way to create the triangle shape is to create a rect and clip it
+            const triangleBarData = svgData.select('g.bar').selectAll('rect').data(colorRange);
+            triangleBarData.exit().remove();
+            triangleBarData.enter()
+                .append('rect')
+                .merge(triangleBarData)
+                .attr('height', height)
+                .attr('width', barWidth)
                 .attr('fill', 'url(#triangle_bar)')
                 .attr('transform', `translate(${marginRight},${0})`)
+                .attr('clip-path', `polygon(0 0, 100% 0, 0 100%)`); */
         }
 
         //#endregion
@@ -220,9 +234,10 @@ class CylinderChart extends Component {
             .attr('font-size', 12)
             .attr('text-anchor', 'middle')
             .text(d => d)
-            .attr('transform', (d) => {
+            .attr('transform', (d, i) => {
                 const ratio = scaleValue(d);
-                return `translate(${marginRight - (ticksWidth * 2) - 8},${ratio * height - 2})`;
+                const topLabelOffset = i === 0 ? 2 : 0;
+                return `translate(${marginRight - (ticksWidth * 2) - 8},${ratio * height - 2 + topLabelOffset})`;
             });
 
         //#endregion
