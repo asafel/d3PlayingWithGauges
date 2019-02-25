@@ -43,8 +43,8 @@ class ArcChart extends Component {
         const [minAngle, maxAngle] = angles;
         const angleRangeDeg = maxAngle - minAngle;
         const Pi = Math.PI;
-        const radius = height - 20;
-        const innerRadius = radius / 2.5;
+        const radius = height * 0.85;
+        const innerRadius = radius / 2.3;
         const ringWidth = 15;
         const ringInset = 15;
         const ticksWidth = 24;
@@ -176,15 +176,16 @@ class ArcChart extends Component {
             .attr('class', 'gauge_label')
             .attr('dominant-baseline', 'central')
             .attr('text-anchor', 'middle')
+            .attr('font-size', 14)
             .text(d => d)
             .attr('transform', (d) => {
                 const ratio = scaleValue(d);
                 const innerRadiusOuterStroke = innerRadius - ringInset;
-                const outerRadiusinnerStroke = radius - ringWidth - ringInset;
+                const outerRadiusinnerStroke = radius - ringWidth - ringInset - ticksWidth;
                 const middlePointArcs = (innerRadiusOuterStroke + outerRadiusinnerStroke) / 2;
                 const minAngleRad = this.deg2rad(minAngle);
                 const edgeSize = this.deg2rad(angleRangeDeg);
-
+                
                 // Adding the radius in the end to use the center of the svg as the point of reference
                 const x = middlePointArcs * Math.cos(ratio * edgeSize + minAngleRad - (Pi / 2)) + radius;
                 const y = middlePointArcs * Math.sin(ratio * edgeSize + minAngleRad - (Pi / 2)) + radius;
