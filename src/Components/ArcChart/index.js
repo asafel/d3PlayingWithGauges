@@ -81,6 +81,41 @@ class ArcChart extends Component {
         // Extending our ticks data in order to include new (smaller) ticks
         // "extendedTicksArr" will be an array containing numbers and objects {representing the virtual ticks}
         const extendedTicksArr = [];
+        const tickClassifier = (d) => {
+            let className = 'tick';
+            if (typeof d === "object") {
+                if (d.size === "S") {
+                    className += ' smalltick';
+                } else {
+                    className += ' mediumtick';
+                }
+            }
+            return className;
+        };
+        const tickStrokeClassifier = (d) => {
+            if (typeof d === "object") {
+                if (d.size === "S") {
+                    return ticksWidth * 0.42;
+                } else {
+                    return ticksWidth * 0.67;
+                }
+            }
+            return ticksWidth;
+        };
+        const tickTransformer = (d) => {
+            const val = typeof d === "number" ? d : d.val;
+            const ratio = scaleValue(val);
+            const outerRadiusinnerStroke = radius - ringWidth - ringInset;
+            const minAngleRad = this.deg2rad(minAngle);
+            const edgeSize = this.deg2rad(angleRangeDeg);
+            const newAngle = minAngle + (ratio * angleRangeDeg);
+
+            const x = outerRadiusinnerStroke * Math.cos(ratio * edgeSize + minAngleRad - (Pi / 2));
+            const y = outerRadiusinnerStroke * Math.sin(ratio * edgeSize + minAngleRad - (Pi / 2));
+
+            return `translate(${x},${y}) rotate(${newAngle + 90})`;
+        };
+
         for (let i = 0; i < ticks.length; i++) {
             if (i === ticks.length - 1) {
                 extendedTicksArr.push(ticks[i]);
@@ -99,49 +134,18 @@ class ArcChart extends Component {
                 });
                 newVal += margin;
             }
-        }
+        };
 
         const outerArcTicksData = svgData.select('g.ticks_container').attr('transform', centerTx).selectAll('line').data(extendedTicksArr);
         outerArcTicksData.exit().remove();
         outerArcTicksData.enter()
             .append('line')
             .merge(outerArcTicksData)
-            .attr('class', (d) => {
-                let className = 'tick';
-                if (typeof d === "object") {
-                    if (d.size === "S") {
-                        className += ' smalltick';
-                    } else {
-                        className += ' mediumtick';
-                    }
-                }
-                return className;
-            })
+            .attr('class', tickClassifier)
             .attr('stroke', 'black')
             .attr('opacity', 0.6)
-            .attr('x2', (d) => {
-                if (typeof d === "object") {
-                    if (d.size === "S") {
-                        return ticksWidth * 0.42;
-                    } else {
-                        return ticksWidth * 0.67;
-                    }
-                }
-                return ticksWidth;
-            })
-            .attr('transform', (d) => {
-                const val = typeof d === "number" ? d : d.val;
-                const ratio = scaleValue(val);
-                const outerRadiusinnerStroke = radius - ringWidth - ringInset;
-                const minAngleRad = this.deg2rad(minAngle);
-                const edgeSize = this.deg2rad(angleRangeDeg);
-                const newAngle = minAngle + (ratio * angleRangeDeg);
-
-                const x = outerRadiusinnerStroke * Math.cos(ratio * edgeSize + minAngleRad - (Pi / 2));
-                const y = outerRadiusinnerStroke * Math.sin(ratio * edgeSize + minAngleRad - (Pi / 2));
-
-                return `translate(${x},${y}) rotate(${newAngle + 90})`;
-            });
+            .attr('x2', tickStrokeClassifier)
+            .attr('transform', tickTransformer);
 
         //#endregion
 
