@@ -47,6 +47,7 @@ class ArcChart extends Component {
         const innerRadius = radius / 2.5;
         const ringWidth = 15;
         const ringInset = 20;
+        const ticksWidth = 24;
         const svgData = d3Select(this.element).data([null]);
         const centerTx = this.centerTranslation(radius);
         const scaleValue = d3ScaleLinear()
@@ -122,12 +123,12 @@ class ArcChart extends Component {
             .attr('x2', (d) => {
                 if (typeof d === "object") {
                     if (d.size === "S") {
-                        return 10;
+                        return ticksWidth * 0.42;
                     } else {
-                        return 16;
+                        return ticksWidth * 0.67;
                     }
                 }
-                return 24;
+                return ticksWidth;
             })
             .attr('transform', (d) => {
                 const val = typeof d === "number" ? d : d.val;
