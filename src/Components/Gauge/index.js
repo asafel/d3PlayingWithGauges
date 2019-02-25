@@ -10,17 +10,17 @@ class Gauge extends Component {
         super();
 
         this.state = {
-            curValue: 75
+            curValue: 250
         }
     }
 
     componentDidMount() {
-        setInterval(() => {
-            const curValue = Math.random() * 250;
-            this.setState({
-                curValue
-            })
-        }, 3000);
+        // setInterval(() => {
+        //     const curValue = Math.random() * 250;
+        //     this.setState({
+        //         curValue
+        //     })
+        // }, 3000);
     }
 
     render() {
@@ -53,7 +53,7 @@ class Gauge extends Component {
         const cylinderChart = <CylinderChart
             values={bands}
             majorTicks={5}
-            height={200}
+            height={220}
             width={300}
             barWidth={20}
             hasSecondTicks={true}
@@ -62,7 +62,7 @@ class Gauge extends Component {
         const cylinderChart2 = <CylinderChart
         values={bands}
             majorTicks={5}
-            height={200}
+            height={220}
             width={300}
             barWidth={20}
             isTriangleShape={false}
@@ -72,7 +72,7 @@ class Gauge extends Component {
         const cylinderChart3 = <CylinderChart
         values={bands}
             majorTicks={5}
-            height={200}
+            height={220}
             width={300}
             barWidth={22}
             isTriangleShape={true}

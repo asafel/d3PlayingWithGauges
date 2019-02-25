@@ -46,6 +46,7 @@ class CylinderChart extends Component {
         const scaleValue = d3ScaleLinear()
             .range([0, 1])
             .domain([maxValue, minValue]);
+        const pointerWidth = 18;
         const DURATION = 1200;
         const ticksWidth = 16;
         const marginRight = width / 2 - barWidth;
@@ -54,7 +55,6 @@ class CylinderChart extends Component {
 
         //#region bar
 
-        // Using clip-path to create the triangle shape
         const barData = svgData.select('g.bar')
             .attr('clip-path', isTriangleShape ? 'polygon(0 0, 100% 0, 0 100%)' : null)
             .selectAll('rect')
@@ -64,7 +64,7 @@ class CylinderChart extends Component {
             .append('rect')
             .merge(barData)
             .attr('x', marginRight)
-            .attr('y', d => (scaleValue(d.max) * height))
+            .attr('y', d => (scaleValue(d.max) * height) + pointerWidth / 2)
             .attr('width', barWidth)
             .attr('height', d => (scaleValue(d.min) - scaleValue(d.max)) * height)
             .attr('fill', d => d.color)
@@ -126,7 +126,7 @@ class CylinderChart extends Component {
             .attr('transform', (d) => {
                 const val = typeof d === "number" ? d : d.val;
                 const ratio = scaleValue(val);
-                return `translate(${marginRight - 5},${ratio * height - 1}) rotate(180)`;
+                return `translate(${marginRight - 5},${ratio * height + pointerWidth / 2}) rotate(180)`;
             });
 
 
@@ -139,8 +139,8 @@ class CylinderChart extends Component {
             .attr('class', 'vertical')
             .attr('stroke', 'black')
             .attr('opacity', 0.6)
-            .attr('y1', -1)
-            .attr('y2', height)
+            .attr('y1', pointerWidth / 2)
+            .attr('y2', height + pointerWidth / 2)
             .attr('transform', (d) => {
                 return `translate(${marginRight - 5},0)`;
             });
@@ -178,7 +178,7 @@ class CylinderChart extends Component {
                 .attr('transform', (d) => {
                     const val = typeof d === "number" ? d : d.val;
                     const ratio = scaleValue(val);
-                    return `translate(${barWidth + marginRight + 5},${ratio * height - 1})`;
+                    return `translate(${barWidth + marginRight + 5},${ratio * height + pointerWidth / 2})`;
                 });
 
 
@@ -191,8 +191,8 @@ class CylinderChart extends Component {
                 .attr('class', 'right vertical')
                 .attr('stroke', 'black')
                 .attr('opacity', 0.6)
-                .attr('y1', -1)
-                .attr('y2', height)
+                .attr('y1', pointerWidth / 2)
+                .attr('y2', height + pointerWidth / 2)
                 .attr('transform', (d) => {
                     return `translate(${barWidth + marginRight + 5},0)`;
                 });
@@ -213,15 +213,13 @@ class CylinderChart extends Component {
             .text(d => d)
             .attr('transform', (d, i) => {
                 const ratio = scaleValue(d);
-                const topLabelOffset = i === 0 ? 2 : 0;
-                return `translate(${marginRight - (ticksWidth * 2) - 8},${ratio * height - 2 + topLabelOffset})`;
+                return `translate(${marginRight - (ticksWidth * 2) - 6},${ratio * height + pointerWidth / 2})`;
             });
 
         //#endregion
 
         //#region Pointer
 
-        const pointerWidth = 18;
         const pointerColor = '#5eb2d6';
         const pointerLineData = [
             [0, 0],
@@ -235,12 +233,12 @@ class CylinderChart extends Component {
             .append('path')
             .attr('d', pointerLine)
             .attr('fill', pointerColor)
-            .attr('transform', `translate(${barWidth + marginRight + 5},${height})`)
+            .attr('transform', `translate(${barWidth + marginRight + 5},${height + pointerWidth / 2})`)
             .merge(pointerData)
             .transition()
             .duration(DURATION)
             .ease(d3EaseSin)
-            .attr('transform', `translate(${barWidth + marginRight + 5},${ratio * height})`);
+            .attr('transform', `translate(${barWidth + marginRight + 5},${ratio * height + pointerWidth / 2})`);
         //#endregion
 
         //#region Value text
@@ -261,7 +259,7 @@ class CylinderChart extends Component {
         const { width, height } = this.props;
 
         return (
-            <svg viewBox="0 -40 300 300" width={width} height={height + 80} className='cylinder_gauge' ref={element => this.element = element} >
+            <svg viewBox="0 0 300 300" width={width} height={height} className='cylinder_gauge' ref={element => this.element = element} >
                 <g className="ticks_container" />
                 <g className="pointer" />
                 <g className="labels" />
