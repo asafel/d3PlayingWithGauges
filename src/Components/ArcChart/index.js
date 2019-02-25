@@ -4,13 +4,7 @@ import React, {
 import * as d3 from 'd3'
 
 class ArcChart extends Component {
-
-    constructor(props) {
-        super(props)
-
-        this.createArcChart = this.createArcChart.bind(this)
-    }
-
+   
     componentDidMount() {
         this.createArcChart();
     }
@@ -48,12 +42,12 @@ class ArcChart extends Component {
         const ringInset = 15;
         const ticksWidth = 24;
         const svgData = d3Select(this.element).data([null]);
-        const centerTx = this.centerTranslation(radius);
+        const centerTx = `translate(${radius},${radius})`;
         const scaleValue = d3ScaleLinear()
             .range([0, 1])
             .domain([minValue, maxValue]);
         const ticks = scaleValue.ticks(majorTicks);
-
+        
         //#region Outer arc
 
         // Creating the outer arc with no width
@@ -251,10 +245,6 @@ class ArcChart extends Component {
 
     deg2rad = (deg) => {
         return deg * Math.PI / 180
-    }
-
-    centerTranslation = (r) => {
-        return `translate(${r},${r})`;
     }
 
     render() {

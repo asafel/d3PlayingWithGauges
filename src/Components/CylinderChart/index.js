@@ -5,12 +5,6 @@ import * as d3 from 'd3'
 
 class CylinderChart extends Component {
 
-    constructor(props) {
-        super(props)
-
-        this.createArcChart = this.createCylinderChart.bind(this)
-    }
-
     componentDidMount() {
         this.createCylinderChart();
     }
