@@ -2,7 +2,6 @@ import React, {
     Component
 } from 'react';
 import * as d3 from 'd3'
-import './style.scss';
 
 class CylinderChart extends Component {
 
@@ -64,7 +63,7 @@ class CylinderChart extends Component {
             .append('rect')
             .merge(barData)
             .attr('x', marginRight)
-            .attr('y', d => (scaleValue(d.max) * height) + pointerWidth / 2)
+            .attr('y', d => (scaleValue(d.max) * height) + pointerWidth)
             .attr('width', barWidth)
             .attr('height', d => (scaleValue(d.min) - scaleValue(d.max)) * height)
             .attr('fill', d => d.color)
@@ -73,6 +72,27 @@ class CylinderChart extends Component {
 
         //#region ticks
 
+        const tickClassifier = (d) => {
+            let className = 'tick';
+            if (typeof d === "object") {
+                if (d.size === "S") {
+                    className += ' small';
+                } else {
+                    className += ' medium';
+                }
+            }
+            return className;
+        }
+        const tickStrokeClassifier = (d) => {
+            if (typeof d === "object") {
+                if (d.size === "S") {
+                    return ticksWidth * 0.375;
+                } else {
+                    return ticksWidth * 0.625;
+                }
+            }
+            return ticksWidth;
+        }
         const extendedTicksArr = [];
         for (let i = 0; i < ticks.length; i++) {
             if (i === ticks.length - 1) {
@@ -100,33 +120,14 @@ class CylinderChart extends Component {
         leftTicksData.enter()
             .append('line')
             .merge(leftTicksData)
-            .attr('class', (d) => {
-                let className = 'tick';
-                if (typeof d === "object") {
-                    if (d.size === "S") {
-                        className += ' smalltick';
-                    } else {
-                        className += ' mediumtick';
-                    }
-                }
-                return className;
-            })
+            .attr('class', tickClassifier)
             .attr('stroke', 'black')
             .attr('opacity', 0.6)
-            .attr('x2', (d) => {
-                if (typeof d === "object") {
-                    if (d.size === "S") {
-                        return ticksWidth * 0.375;
-                    } else {
-                        return ticksWidth * 0.625;
-                    }
-                }
-                return ticksWidth;
-            })
+            .attr('x2', tickStrokeClassifier)
             .attr('transform', (d) => {
                 const val = typeof d === "number" ? d : d.val;
                 const ratio = scaleValue(val);
-                return `translate(${marginRight - 5},${ratio * height + pointerWidth / 2}) rotate(180)`;
+                return `translate(${marginRight - 5},${ratio * height + pointerWidth}) rotate(180)`;
             });
 
 
@@ -139,8 +140,8 @@ class CylinderChart extends Component {
             .attr('class', 'vertical')
             .attr('stroke', 'black')
             .attr('opacity', 0.6)
-            .attr('y1', pointerWidth / 2)
-            .attr('y2', height + pointerWidth / 2)
+            .attr('y1', pointerWidth)
+            .attr('y2', height + pointerWidth)
             .attr('transform', (d) => {
                 return `translate(${marginRight - 5},0)`;
             });
@@ -152,33 +153,14 @@ class CylinderChart extends Component {
             rightTicksData.enter()
                 .append('line')
                 .merge(rightTicksData)
-                .attr('class', (d) => {
-                    let className = 'right tick';
-                    if (typeof d === "object") {
-                        if (d.size === "S") {
-                            className += ' smalltick';
-                        } else {
-                            className += ' mediumtick';
-                        }
-                    }
-                    return className;
-                })
+                .attr('class', tickClassifier)
                 .attr('stroke', 'black')
                 .attr('opacity', 0.6)
-                .attr('x2', (d) => {
-                    if (typeof d === "object") {
-                        if (d.size === "S") {
-                            return ticksWidth * 0.375;
-                        } else {
-                            return ticksWidth * 0.625;
-                        }
-                    }
-                    return ticksWidth;
-                })
+                .attr('x2', tickStrokeClassifier)
                 .attr('transform', (d) => {
                     const val = typeof d === "number" ? d : d.val;
                     const ratio = scaleValue(val);
-                    return `translate(${barWidth + marginRight + 5},${ratio * height + pointerWidth / 2})`;
+                    return `translate(${barWidth + marginRight + 5},${ratio * height + pointerWidth})`;
                 });
 
 
@@ -191,8 +173,8 @@ class CylinderChart extends Component {
                 .attr('class', 'right vertical')
                 .attr('stroke', 'black')
                 .attr('opacity', 0.6)
-                .attr('y1', pointerWidth / 2)
-                .attr('y2', height + pointerWidth / 2)
+                .attr('y1', pointerWidth)
+                .attr('y2', height + pointerWidth)
                 .attr('transform', (d) => {
                     return `translate(${barWidth + marginRight + 5},0)`;
                 });
@@ -213,7 +195,7 @@ class CylinderChart extends Component {
             .text(d => d)
             .attr('transform', d => {
                 const ratio = scaleValue(d);
-                return `translate(${marginRight - (ticksWidth * 2) - 6},${ratio * height + pointerWidth / 2})`;
+                return `translate(${marginRight - (ticksWidth * 2) - 6},${ratio * height + pointerWidth})`;
             });
 
         //#endregion
@@ -233,12 +215,12 @@ class CylinderChart extends Component {
             .append('path')
             .attr('d', pointerLine)
             .attr('fill', pointerColor)
-            .attr('transform', `translate(${barWidth + marginRight + 5},${height + pointerWidth / 2})`)
+            .attr('transform', `translate(${barWidth + marginRight + 5},${height + pointerWidth})`)
             .merge(pointerData)
             .transition()
             .duration(DURATION)
             .ease(d3EaseSin)
-            .attr('transform', `translate(${barWidth + marginRight + 5},${ratio * height + pointerWidth / 2})`);
+            .attr('transform', `translate(${barWidth + marginRight + 5},${ratio * height + pointerWidth})`);
         //#endregion
 
         //#region Value text
@@ -250,7 +232,7 @@ class CylinderChart extends Component {
             .attr('font-size', 30)
             .attr('fill', '#1a88b7')
             .attr('font-weight', 400)
-            .attr('transform', `translate(${(barWidth / 2) + marginRight},${height + pointerWidth / 2 + 40})`)
+            .attr('transform', `translate(${(barWidth / 2) + marginRight},${height + pointerWidth + 50})`)
             .text(Math.ceil(curValue));
         //#endregion
     }

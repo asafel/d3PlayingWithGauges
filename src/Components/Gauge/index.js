@@ -27,11 +27,11 @@ class Gauge extends Component {
         const bands = [
             {
                 min: 0,
-                max: 90,
+                max: 70,
                 color: '#de4b25'
             },
             {
-                min: 90,
+                min: 70,
                 max: 160,
                 color: '#f0bf2c'
             },

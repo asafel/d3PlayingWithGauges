@@ -2,7 +2,6 @@ import React, {
     Component
 } from 'react';
 import * as d3 from 'd3'
-import './style.scss';
 
 class ArcChart extends Component {
 
@@ -185,7 +184,7 @@ class ArcChart extends Component {
                 const middlePointArcs = (innerRadiusOuterStroke + outerRadiusinnerStroke) / 2;
                 const minAngleRad = this.deg2rad(minAngle);
                 const edgeSize = this.deg2rad(angleRangeDeg);
-                
+
                 // Adding the radius in the end to use the center of the svg as the point of reference
                 const x = middlePointArcs * Math.cos(ratio * edgeSize + minAngleRad - (Pi / 2)) + radius;
                 const y = middlePointArcs * Math.sin(ratio * edgeSize + minAngleRad - (Pi / 2)) + radius;
