@@ -46,7 +46,7 @@ class ArcChart extends Component {
         const radius = height - 20;
         const innerRadius = radius / 2.5;
         const ringWidth = 15;
-        const ringInset = 20;
+        const ringInset = 15;
         const ticksWidth = 24;
         const svgData = d3Select(this.element).data([null]);
         const centerTx = this.centerTranslation(radius);
@@ -254,12 +254,13 @@ class ArcChart extends Component {
     }
 
     render() {
-        const { width } = this.props;
+        const { width, height } = this.props;
 
         return (
             <svg
+                viewBox={`0 0 400 400`}
                 width={width}
-                height={'100%'}
+                height={height}
                 className='gauge'
                 ref={element => this.element = element} >
                 <g className="outer_arc" />

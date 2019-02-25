@@ -10,42 +10,41 @@ class Gauge extends Component {
         super();
 
         this.state = {
-            curValue: 250
+            curValue: 75
         }
     }
 
     componentDidMount() {
-        // setInterval(() => {
-        //     const curValue = Math.random() * 250;
-        //     this.setState({
-        //         curValue
-        //     })
-        // }, 3000);
+        setInterval(() => {
+            const curValue = Math.random() * 250;
+            this.setState({
+                curValue
+            })
+        }, 3000);
     }
 
     render() {
         const bands = [
             {
                 min: 0,
-                max: 120,
+                max: 90,
                 color: '#de4b25'
             },
             {
-                min: 120,
-                max: 180,
+                min: 90,
+                max: 160,
                 color: '#f0bf2c'
             },
             {
-                min: 180,
+                min: 160,
                 max: 250,
                 color: '#8abe6e'
             },
         ]
         const arcChart = <ArcChart
             values={bands}
-            angles={[-60, 60]}
+            angles={[-90, 90]}
             majorTicks={5}
-            colors={['#de4b25', '#f0bf2c', '#8abe6e']}
             height={250}
             width={500}
             curValue={this.state.curValue} />;

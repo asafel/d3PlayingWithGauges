@@ -9,18 +9,18 @@ class CylinderChart extends Component {
     constructor(props) {
         super(props)
 
-        this.createArcChart = this.createArcChart.bind(this)
+        this.createArcChart = this.createCylinderChart.bind(this)
     }
 
     componentDidMount() {
-        this.createArcChart();
+        this.createCylinderChart();
     }
 
     componentDidUpdate() {
-        this.createArcChart();
+        this.createCylinderChart();
     }
 
-    createArcChart() {
+    createCylinderChart() {
         const {
             select: d3Select,
             scaleLinear: d3ScaleLinear,
@@ -211,7 +211,7 @@ class CylinderChart extends Component {
             .attr('font-size', 12)
             .attr('text-anchor', 'middle')
             .text(d => d)
-            .attr('transform', (d, i) => {
+            .attr('transform', d => {
                 const ratio = scaleValue(d);
                 return `translate(${marginRight - (ticksWidth * 2) - 6},${ratio * height + pointerWidth / 2})`;
             });
@@ -250,7 +250,7 @@ class CylinderChart extends Component {
             .attr('font-size', 30)
             .attr('fill', '#1a88b7')
             .attr('font-weight', 400)
-            .attr('transform', `translate(${(barWidth / 2) + marginRight},${height + 40})`)
+            .attr('transform', `translate(${(barWidth / 2) + marginRight},${height + pointerWidth / 2 + 40})`)
             .text(Math.ceil(curValue));
         //#endregion
     }
@@ -259,7 +259,7 @@ class CylinderChart extends Component {
         const { width, height } = this.props;
 
         return (
-            <svg viewBox="0 0 300 300" width={width} height={height} className='cylinder_gauge' ref={element => this.element = element} >
+            <svg viewBox="0 0 350 350" width={width} height={height} className='cylinder_gauge' ref={element => this.element = element} >
                 <g className="ticks_container" />
                 <g className="pointer" />
                 <g className="labels" />
