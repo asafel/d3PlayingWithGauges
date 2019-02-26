@@ -37,7 +37,7 @@ class ArcChart extends Component {
         const angleRangeDeg = maxAngle - minAngle;
         const Pi = Math.PI;
         const radius = height * 0.85;
-        const innerRadius = radius / 2.3;
+        const innerRadius = radius / 2;
         const ringWidth = 15;
         const ringInset = 15;
         const ticksWidth = 24;
@@ -179,7 +179,7 @@ class ArcChart extends Component {
                 const ratio = scaleValue(d);
                 const innerRadiusOuterStroke = innerRadius - ringInset;
                 const outerRadiusinnerStroke = radius - ringWidth - ringInset - ticksWidth;
-                const middlePointArcs = (innerRadiusOuterStroke + outerRadiusinnerStroke) / 2;
+                const middlePointArcs = (innerRadiusOuterStroke + outerRadiusinnerStroke) * 0.53;
                 const minAngleRad = this.deg2rad(minAngle);
                 const edgeSize = this.deg2rad(angleRangeDeg);
 
