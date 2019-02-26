@@ -108,7 +108,7 @@ class CylinderChart extends Component {
             selection.enter()
                 .append('line')
                 .merge(selection)
-                .attr('class', `${leftSide ? '' : 'right '}vertical`)
+                .attr('class', `${leftSide ? '' : 'right '}domain`)
                 .attr('stroke', 'black')
                 .attr('opacity', 0.6)
                 .attr('y1', pointerWidth)
@@ -139,14 +139,14 @@ class CylinderChart extends Component {
             }
         };
 
-        const leftTicksData = svgData.select('g.ticks-container').selectAll('line').data(extendedTicksArr);
-        createBarTicks(leftTicksData);
-        const verticalLeftLine = svgData.select('g.ticks-container').selectAll('line.vertical').data([null]);
-        createDomainTickLines(verticalLeftLine);
+        const leftTicksSelection = svgData.select('g.ticks-container').selectAll('line.tick').data(extendedTicksArr);
+        const verticalLeftLineSelection = svgData.select('g.ticks-container').selectAll('line.domain').data([null]);
+        createBarTicks(leftTicksSelection);
+        createDomainTickLines(verticalLeftLineSelection);
 
         if (hasSecondTicks) {
-            const rightTicksData = svgData.select('g.ticks-container').selectAll('line.right').data(extendedTicksArr);
-            const verticalRightLine = svgData.select('g.ticks-container').selectAll('line.right.vertical').data([null]);
+            const rightTicksData = svgData.select('g.ticks-container').selectAll('line.right.tick').data(extendedTicksArr);
+            const verticalRightLine = svgData.select('g.ticks-container').selectAll('line.right.domain').data([null]);
             createBarTicks(rightTicksData, false);
             createDomainTickLines(verticalRightLine, false);
         };
