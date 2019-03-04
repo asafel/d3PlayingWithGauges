@@ -4,7 +4,7 @@ import React, {
 import * as d3 from 'd3'
 
 class ArcChart extends Component {
-   
+
     componentDidMount() {
         this.createArcChart();
     }
@@ -29,6 +29,7 @@ class ArcChart extends Component {
             height,
             angles,
             majorTicks,
+            target
         } = this.props;
 
         const minValue = values[0].min || 0;
@@ -47,7 +48,7 @@ class ArcChart extends Component {
             .range([0, 1])
             .domain([minValue, maxValue]);
         const ticks = scaleValue.ticks(majorTicks);
-        
+
         //#region Outer arc
 
         // Creating the outer arc with no width
@@ -241,6 +242,28 @@ class ArcChart extends Component {
 
         //#endregion
 
+        //#region target
+        if (target != null) {
+            const targetCircleSelection = svgData.select('g.target-container').attr('transform', centerTx).selectAll('circle').data([null]);
+            targetCircleSelection.exit().remove();
+            targetCircleSelection.enter()
+                .append('circle')
+                .attr('class', 'traget-circle')
+                .attr('stroke', 'red')
+                .attr('fill', 'transparent')
+                .attr('r', 8)
+                .attr('transform', () => {
+                    const ratio = scaleValue(target);
+                    const outerRadiusinnerStroke = radius - ringWidth - ringInset;
+                    const minAngleRad = this.deg2rad(minAngle);
+                    const edgeSize = this.deg2rad(angleRangeDeg);
+
+                    const x = (outerRadiusinnerStroke - 12) * Math.cos(ratio * edgeSize + minAngleRad - (Pi / 2));
+                    const y = (outerRadiusinnerStroke - 12) * Math.sin(ratio * edgeSize + minAngleRad - (Pi / 2));
+                    return `translate(${x},${y})`;
+                })
+        }
+        //#endregion
     }
 
     deg2rad = (deg) => {
@@ -259,6 +282,7 @@ class ArcChart extends Component {
                 ref={element => this.element = element} >
                 <g className="outer_arc" />
                 <g className="ticks_container" />
+                <g className="target-container" />
                 <g className="inner_arcs" />
                 <g className="labels" />
                 <g className="pointer" />

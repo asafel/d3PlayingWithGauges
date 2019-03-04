@@ -29,7 +29,8 @@ class CylinderChart extends Component {
             majorTicks,
             barWidth,
             hasSecondTicks,
-            isTriangleShape
+            isTriangleShape,
+            target
         } = this.props;
 
         const minValue = values[0].min || 0;
@@ -206,6 +207,23 @@ class CylinderChart extends Component {
             .attr('transform', `translate(${(barWidth / 2) + marginLeft},${height + pointerWidth + 50})`)
             .text(Math.ceil(curValue));
         //#endregion
+
+        //#region target circle
+        if (target != null) {
+            const targetCircleSelection = svgData.select('g.target-container').selectAll('circle.traget-circle').data([null]);
+            targetCircleSelection.exit().remove();
+            targetCircleSelection.enter()
+                .append('circle')
+                .attr('class', 'traget-circle')
+                .attr('stroke', 'red')
+                .attr('fill', 'transparent')
+                .attr('r', 7)
+                .attr('transform', () => {
+                    const ratio = scaleValue(target);
+                    return `translate(${marginLeft - ticksWidth},${ratio * height + pointerWidth})`;
+                })
+        }
+        //#endregion
     }
 
     render() {
@@ -214,6 +232,7 @@ class CylinderChart extends Component {
         return (
             <svg viewBox="0 0 350 350" width={width} height={height} className='cylinder_gauge' ref={element => this.element = element} >
                 <g className="ticks-container" />
+                <g className="target-container" />
                 <g className="pointer" />
                 <g className="labels" />
                 <g className="bar" />

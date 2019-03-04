@@ -44,6 +44,7 @@ class Gauge extends Component {
         const arcChart = <ArcChart
             values={bands}
             angles={[-90, 90]}
+            target={155}
             majorTicks={5}
             height={250}
             width={500}
@@ -53,6 +54,7 @@ class Gauge extends Component {
             values={bands}
             majorTicks={5}
             height={220}
+            target={45}
             width={300}
             barWidth={20}
             hasSecondTicks={true}
@@ -62,6 +64,7 @@ class Gauge extends Component {
         values={bands}
             majorTicks={5}
             height={220}
+            target={132}
             width={300}
             barWidth={20}
             isTriangleShape={false}
@@ -72,6 +75,7 @@ class Gauge extends Component {
         values={bands}
             majorTicks={5}
             height={220}
+            target={190}
             width={300}
             barWidth={22}
             isTriangleShape={true}
